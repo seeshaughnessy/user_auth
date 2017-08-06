@@ -85,23 +85,37 @@ router.get('/login', (req, res, next) => {
 	return res.render('login', {title: 'Login'})
 });
 
+// GET /logout
+// GET /login
+router.get('/logout', (req, res, next) => {
+	if (req.session) {
+		// Delete session object
+		req.session.destroy(function(err) {
+			if(err) {
+				return next(err);
+			} else {
+				return res.redirect('/');
+			}
+		});
+	}
+});
+
 // POST /login
-router.post('/login', (req, res, next) => {
+router.post('/login', function(req, res, next) {
 	if (req.body.email && req.body.password) {
 		User.authenticate(req.body.email, req.body.password, function (error, user) {
 			if (error || !user) {
-				var err = new Error('Wrong email or password');
+				var err = new Error('Wrong email or password.');
 				err.status = 401;
 				return next(err);
-			} else {
-				// Create a session (or add a property), assign to users unique id
+			}  else {
 				req.session.userId = user._id;
 				return res.redirect('/profile');
 			}
-		})
+		});
 	} else {
-		var err = new Error('Email and password are required');
-		err.status = 400;
+		var err = new Error('Email and password are required.');
+		err.status = 401;
 		return next(err);
 	}
 });
